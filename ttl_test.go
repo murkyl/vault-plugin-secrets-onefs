@@ -19,11 +19,11 @@ func TestCalcTTL(t *testing.T) {
 	HelperCalcTTL(t, 200, -1, -1, 100, 100)
 	HelperCalcTTL(t, 200, 150, -1, -1, 150)
 	HelperCalcTTL(t, 200, -1, 120, -1, 120)
-	HelperCalcTTL(t, -1, 400, 300, -1, 300)
-	HelperCalcTTL(t, -1, 400, 400, -1, 400)
+	HelperCalcTTL(t, -1, 400, 300, -1, -1)
+	HelperCalcTTL(t, -1, 400, 400, -1, -1)
 	HelperCalcTTL(t, -1, 400, 400, 280, 280)
 	HelperCalcTTL(t, -1, -1, 400, 280, 280)
-	HelperCalcTTL(t, -1, -1, 400, 580, 400)
+	HelperCalcTTL(t, -1, -1, 400, 580, 580)
 }
 
 func HelperCalcMaxTTL(t *testing.T, a int, b int, expected int) {
