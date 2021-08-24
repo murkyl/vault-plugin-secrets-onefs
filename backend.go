@@ -15,7 +15,7 @@ const backendHelp = `
 The OneFS S3 secrets plugin for Vault allows dynamic creation and removal of S3 access tokens and secrets.
 The plugin supports creation of role based access controls through integration with on cluster configuration.
 `
-const defaultUserRegexp string = "^%s_[^_]+_[^_]+_[0-9]{14}$"
+const defaultUserRegexp string = "^%s_[^_]+_[^_]+_(?P<TimeStamp>[0-9]{14})$"
 
 type backend struct {
 	*framework.Backend
@@ -96,7 +96,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 	cleanupTime := b.LastCleanup.Add(time.Second * time.Duration(cfg.CleanupPeriod))
 	curTime := time.Now()
 	if curTime.After(cleanupTime) {
-		rex, _ := regexp.Compile(fmt.Sprintf(defaultUserRegexp, cfg.UsernamePrefix))
+		rex := regexp.MustCompile(fmt.Sprintf(defaultUserRegexp, cfg.UsernamePrefix))
 		zones, err := b.Conn.PapiGetAccessZoneList()
 		if err != nil {
 			b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to get access zone list: %s", err))
@@ -110,10 +110,19 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 			}
 			for j := 0; j < len(users); j++ {
 				// Regex match each user name to determine which users are created by this plugin
-				if rex.MatchString(users[j].Name) {
-					_, err := b.Conn.PapiDeleteUser(users[j].Name, zones[i].Name)
+				result := rex.FindAllStringSubmatch(users[j].Name, -1)
+				if result != nil {
+					// If the user name matches, we need to parse the expiration timestamp from the user name and compare it to the current time
+					expireTime, err := time.ParseInLocation(defaultPathCredsTimeFormat, result[0][1], time.Local) 
 					if err != nil {
-						b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to delete user %s for access zone: %s", users[j].Name, zones[i].Name))
+						return err
+					}
+					// If expireTime is earlier than our current time then this user has expired
+					if expireTime.Before(curTime) {
+						_, err := b.Conn.PapiDeleteUser(users[j].Name, zones[i].Name)
+						if err != nil {
+							b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to delete user %s for access zone: %s", users[j].Name, zones[i].Name))
+						}
 					}
 				}
 			}
