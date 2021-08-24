@@ -76,11 +76,11 @@ Normal use involves creating roles that associate local groups to the role and t
 
 #### Create an initial test S3 bucket on the OneFS cluster and add ACEs
     isi s3 buckets create --create-path --name=testbucket --path=/ifs/testbucket --owner=root
-     isi s3 buckets modify testbucket --add-ace="name=Backup Operators,type=group,perm=full_control"
+    isi s3 buckets modify testbucket --add-ace="name=Backup Operators,type=group,perm=full_control"
     isi s3 buckets modify testbucket --add-ace="name=Guests,type=group,perm=full_control"
 
 ### Create a plugin role in Vault that will have access to the test bucket
-This plugin role will associate local groups to the dynamic user and since the bucket ACL has these groups the dynamic user will have access to the bucket.
+This plugin role will associate local groups to the dynamic user and since the bucket ACL has these groups the dynamic user will have access to the bucket. Backup Operators and Guests are used in this example as they are available by default on the cluster.
 ```shell
 vault write onefss3/roles/Test1 group="Guests" group="Backup Operators" bucket="s3-test" access_zone="System"
 ```
@@ -99,9 +99,9 @@ vault read onefss3/creds/Test1 ttl=180
 
 ## Plugin options
 ### Available paths
-/config/root
-/roles/_role_name_
-/creds/_role_name_
+    /config/root
+    /roles/_role_name_
+    /creds/_role_name_
 
 ### Available options
 The configured TTL values for the role and plugin itself can be any value however, all TTL value will get rounded to the nearest 60 seconds (1 minute) when actually used.
