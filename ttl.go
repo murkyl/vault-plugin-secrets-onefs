@@ -33,9 +33,16 @@ func CalcMaxTTL(roleMaxTTL int, cfgMaxTTL int) int {
 // -1 represents an unlimited TTL
 // 0 represents the default of a encompassing TTL or is the equilvalent of -1 when there is no encompassing TTL
 func CalcTTL(requestedTTL int, roleTTL int, cfgTTL int, maxTTL int) int {
-	max1 := GetTTLOfTwoValues(roleTTL, cfgTTL)
-	max2 := GetTTLOfTwoValues(requestedTTL, max1)
-	return GetTTLOfTwoValues(max2, maxTTL)
+	if requestedTTL < 0 {
+		return maxTTL
+	}
+	max1 := GetTTLOfTwoValues(cfgTTL, maxTTL)
+	max2 := GetTTLOfTwoValues(roleTTL, max1)
+ 	if requestedTTL == 0 {
+		return max2
+	}
+	// else if requestedTTL > 0
+	return GetTTLOfTwoValues(max2, requestedTTL)
 }
 
 // GetTTLOfTwoValues returns the larger TTL of 2 values
