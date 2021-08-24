@@ -1,5 +1,5 @@
 # OneFS S3 secrets plugin for Hashicorp Vault
-Create dynamic secrets, access key ID and secret, for accessing OneFS S3 buckets.
+Create dynamic access key ID and secret for accessing OneFS S3 buckets.
 
 ## How it works
 This plugin dynamically creates local users on the OneFS cluster that belong to different groups depending on their roles. The S3 buckets created in OneFS are configured to have bucket ACLs providing access to the same groups that are configured for a user. This allows many users to access the same bucket without adding and removing user accounts to each bucket individually.
