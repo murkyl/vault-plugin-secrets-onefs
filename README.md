@@ -40,7 +40,7 @@ vault secrets enable -path=onefss3 vault-plugin-secrets-onefs-s3
 ```
 
 ### Plugin configuration
-To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path:-/config/root) below for additional customization.
+To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path-configroot) below for additional customization.
 
 ```shell
 vault write onefss3/config/root \
@@ -84,7 +84,7 @@ This plugin role will associate local groups to the dynamic user and since the b
 ```shell
 vault write onefss3/roles/Test1 group="Guests" group="Backup Operators" bucket="s3-test" access_zone="System"
 ```
-The access zone is required when defining a role. See the [available options](#path:-/roles/role_name) below for additional customization.
+The access zone is required when defining a role. See the [available options](#path-rolesrole_name) below for additional customization.
 
 ### Retrieve a credential
 ```shell
