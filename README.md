@@ -8,10 +8,10 @@ This plugin dynamically creates local users on the OneFS cluster that belong to 
 A secrets engine plugin must be setup and configured before it can be used. Follow the directions below to properly install and configure the plugin.
 
 ### Using pre-built releases (recommended)
-Any binary releases available can be found [here](https://github.com/murkyl/vault-plugin-secrets-onefss3/releases).
+Any binary releases available can be found [here](https://github.com/murkyl/vault-plugin-secrets-onefs-s3/releases).
 
 ### From source
-Clone the GitHub repository to your local machine and run `make build` from the root of the sources diretory. After successful compilation the resulting `vault-plugin-secrets-onefss3` binary is located in the `bin/` directory.
+Clone the GitHub repository to your local machine and run `make build` from the root of the sources directory. After successful compilation the resulting `vault-plugin-secrets-onefs-s3` binary is located in the `bin/` directory.
 
 Building from source assumes you have installed the Go development environment.
 
@@ -40,7 +40,7 @@ vault secrets enable -path=onefss3 vault-plugin-secrets-onefs-s3
 ```
 
 ### Plugin configuration
-To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path-configroot) below for additional customization.
+To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path:-/config/root) below for additional customization.
 
 ```shell
 vault write onefss3/config/root \
@@ -72,7 +72,7 @@ An example of the commands required on the OneFS cluster side follow.
     isi auth roles modify VaultMgr --add-priv-ro=ISI_PRIV_LOGIN_PAPI
 
 ## Usage
-Normal use involves creating roles that associate local groups to the role and then retrieving the credentials for that role. The roles and credential paths need to be secured via ACLs in Vault itself as the plugin does not perform any authentication or access control. Any request that reaches the plugin is assumed ot have permission to do so from Vault.
+Normal use involves creating roles that associate local groups to the role and then retrieving the credentials for that role. The roles and credential paths need to be secured via ACLs in Vault itself as the plugin does not perform any authentication or access control. Any request that reaches the plugin is assumed to have permission to do so from Vault.
 
 #### Create an initial test S3 bucket on the OneFS cluster and add ACEs
     isi s3 buckets create --create-path --name=testbucket --path=/ifs/testbucket --owner=root
@@ -84,7 +84,7 @@ This plugin role will associate local groups to the dynamic user and since the b
 ```shell
 vault write onefss3/roles/Test1 group="Guests" group="Backup Operators" bucket="s3-test" access_zone="System"
 ```
-The access zone is required when defining a role. See the [available options](#path-rolesrole_name) below for additional customization.
+The access zone is required when defining a role. See the [available options](#path:-/roles/role_name) below for additional customization.
 
 ### Retrieve a credential
 ```shell
