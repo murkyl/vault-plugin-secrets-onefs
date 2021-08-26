@@ -60,8 +60,9 @@ An example of the commands required on the OneFS cluster side follow.
     chmod 755 /ifs/home/vault
 
 ## Predefined mode
-In this mode the plugin only handles creating S3 access secrets that expire within the defined TTL values. The user is expected to already exist 
+In this mode the plugin only handles creating S3 access secrets that expire within the defined TTL values. The user is expected to already exist either locally on the cluster or in another authentication provider like Active Directory.
 
+No additional cluster configuration is required for this mode.
 
 ## Vault Plugin
 ### Using pre-built releases (recommended)
@@ -99,7 +100,7 @@ vault secrets enable -path=onefss3 vault-plugin-secrets-onefs-s3
 ```
 
 ### Plugin configuration
-To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path-configdynamicroot) below for additional customization. The configuration below assumes defaults are used.
+To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path-configroot) below for additional customization. The configuration below assumes defaults are used.
 
 ### Dynamic mode
 ```shell
@@ -162,13 +163,14 @@ The dynamically generated users will periodically be cleaned up by the plugin. T
 Normal use involves creating roles that represent a user's user name. The user name can be a local user on the cluster or it can be an Active Directory user. An Active Directory username should be in the format `username@domain.com` while local user's are in the format `username`.
 
 ### Create the role
-A user needs to have a role created for them before they are allowed to retrieve a credential. This role should have a Vault access policy only allowing the specified user to access this particular path. Failure to do so could result in a user prematurely invalidating 
-another user's credentials and also reading another user's credentials.
+A user needs to have a role created for them before they are allowed to retrieve a credential. This role should have a Vault access policy only allowing the specified user to access this particular path. Failure to do so could result in a user prematurely invalidating another user's credentials and also reading another user's credentials.
 
 ```shell
 vault write onefss3/roles/predefined/someuser@domain.com
 vault write onefss3/roles/predefined/local_cluster_user ttl=600
 ```
+
+Attempts to configure a role where the user does not exist will succeed. However, when a credential is requested an error will be returned.
 
 ### Retrieve a credential with the default TTL
 ```shell
@@ -183,6 +185,28 @@ vault read onefss3/creds/predefined/local_cluster_user ttl=-1
 ### Retrieve a credential with a TTL of 180 seconds
 ```shell
 vault read onefss3/creds/predefined/someuser@domain.com ttl=180
+```
+
+### Retrieve a credential for a non-existent user
+```shell
+$ vault read onefss3/creds/predefined/BadUser ttl=6000
+Error reading onefss3/creds/predefined/BadUser: Error making API request.
+
+URL: GET http://127.0.0.1:8200/v1/onefss3/creds/predefined/BadUser?ttl=6000
+Code: 500. Errors:
+
+* 1 error occurred:
+	* Unable to get S3 token for user BadUser: [Send] Non 2xx response received (404): 
+{
+"errors" : 
+[
+
+{
+"code" : "AEC_NOT_FOUND",
+"message" : "Failed to find user for 'BadUser'"
+}
+]
+}
 ```
 
 ## Plugin options
