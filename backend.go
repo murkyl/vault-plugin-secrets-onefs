@@ -47,8 +47,10 @@ func Factory(ctx context.Context, cfg *logical.BackendConfig) (logical.Backend, 
 		Help:        strings.TrimSpace(backendHelp),
 		Paths: framework.PathAppend(
 			pathConfigBuild(b),
-			pathRolesBuild(b),
-			pathCredsBuild(b),
+			pathRolesDynamicBuild(b),
+			pathRolesPredefinedBuild(b),
+			pathCredsDynamicBuild(b),
+			pathCredsPredefinedBuild(b),
 		),
 		InitializeFunc: b.pluginInit,
 		PeriodicFunc:   b.pluginPeriod,
@@ -113,7 +115,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 				result := rex.FindAllStringSubmatch(users[j].Name, -1)
 				if result != nil {
 					// If the user name matches, we need to parse the expiration timestamp from the user name and compare it to the current time
-					expireTime, err := time.ParseInLocation(defaultPathCredsTimeFormat, result[0][1], time.Local) 
+					expireTime, err := time.ParseInLocation(defaultPathCredsDynamicTimeFormat, result[0][1], time.Local)
 					if err != nil {
 						return err
 					}

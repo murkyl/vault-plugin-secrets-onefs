@@ -9,53 +9,53 @@ import (
 )
 
 const (
-	apiPathCreds                  string = "creds"
-	defaultPathCredsRandomLength  int    = 6
-	defaultPathCredsTimeFormat    string = "20060102150405"
-	defaultPathCredsExpireSprintf string = "%s_%s_%s_%s"
-	defaultPathCredsInfSprintf    string = "%s_%s_%s_INF_%s"
-	fieldPathCredsName            string = "name"
-	fieldPathCredsTTL             string = "ttl"
+	apiPathCredsDynamic                  string = "creds/dynamic"
+	defaultPathCredsDynamicRandomLength  int    = 6
+	defaultPathCredsDynamicTimeFormat    string = "20060102150405"
+	defaultPathCredsDynamicExpireSprintf string = "%s_%s_%s_%s"
+	defaultPathCredsDynamicInfSprintf    string = "%s_%s_%s_INF_%s"
+	fieldPathCredsDynamicName            string = "name"
+	fieldPathCredsDynamicTTL             string = "ttl"
 )
 
-func pathCredsBuild(b *backend) []*framework.Path {
+func pathCredsDynamicBuild(b *backend) []*framework.Path {
 	return []*framework.Path{
 		{
-			Pattern: apiPathCreds + "/" + framework.GenericNameRegex(fieldPathCredsName),
+			Pattern: apiPathCredsDynamic + "/" + framework.GenericNameRegex(fieldPathCredsDynamicName),
 			Fields: map[string]*framework.FieldSchema{
-				fieldPathCredsName: {
+				fieldPathCredsDynamicName: {
 					Type:        framework.TypeString,
 					Description: "Name of the role to get an access token and secret",
 				},
-				fieldPathCredsTTL: {
+				fieldPathCredsDynamicTTL: {
 					Type:        framework.TypeInt,
 					Description: "Requested credentials duration in seconds. If not set or set to 0, configured default will be used. If set to -1, an unlimited duration credential will be requested if possible. Otherwise the maximum lease time will be granted.",
 				},
 			},
 			Operations: map[logical.Operation]framework.OperationHandler{
-				logical.ReadOperation: &framework.PathOperation{Callback: b.pathCredsRead},
+				logical.ReadOperation: &framework.PathOperation{Callback: b.pathCredsDynamicRead},
 			},
 		},
 	}
 }
 
-// pathCredsRead
+// pathCredsReadDynamic
 // Returns
 // access_key is a text string of the access ID
 // secret_key is a text string of the access ID secret
-// key_expirey is the expiration time of the access ID and secret given in UNIX epoch timestamp seconds.
-func (b *backend) pathCredsRead(ctx context.Context, req *logical.Request, data *framework.FieldData) (*logical.Response, error) {
-	roleName := data.Get(fieldPathCredsName).(string)
+// key_expiry is the expiration time of the access ID and secret given in UNIX epoch timestamp seconds.
+func (b *backend) pathCredsDynamicRead(ctx context.Context, req *logical.Request, data *framework.FieldData) (*logical.Response, error) {
+	roleName := data.Get(fieldPathCredsDynamicName).(string)
 	if roleName == "" {
 		return logical.ErrorResponse("Unable to parse role name"), nil
 	}
 	var credTTL int = 0
-	TTLDuration, ok := data.GetOk(fieldPathCredsTTL)
+	TTLDuration, ok := data.GetOk(fieldPathCredsDynamicTTL)
 	if ok {
 		credTTL = TTLDuration.(int)
 	}
 	// Get configuration from backend storage
-	role, err := getRoleFromStorage(ctx, req.Storage, roleName)
+	role, err := getDynamicRoleFromStorage(ctx, req.Storage, roleName)
 	if err != nil || role == nil {
 		return nil, err
 	}
@@ -78,17 +78,17 @@ func (b *backend) pathCredsRead(ctx context.Context, req *logical.Request, data 
 	// Username prefix, random string, first 4 digits of Vault request UUID, and the expiration time
 	// If the TTL is 0 or -1 (no TTL), the format has 5 parts:
 	// Username prefix, random string, first 4 digits of Vault request UUID, the string INF, the create time for the user instead of expiration time
-	randString, err := GenerateRandomString(defaultPathCredsRandomLength)
+	randString, err := GenerateRandomString(defaultPathCredsDynamicRandomLength)
 	if err != nil {
 		return nil, err
 	}
 	credTime := time.Now().Local()
-	credTimeString := defaultPathCredsInfSprintf
+	credTimeString := defaultPathCredsDynamicInfSprintf
 	if TTLMinutes > 0 {
 		credTime = credTime.Add(time.Duration(TTLMinutes*TTLTimeUnit) * time.Second)
-		credTimeString = defaultPathCredsExpireSprintf
+		credTimeString = defaultPathCredsDynamicExpireSprintf
 	}
-	username := fmt.Sprintf(credTimeString, cfg.UsernamePrefix, randString, req.ID[0:4], credTime.Format(defaultPathCredsTimeFormat))
+	username := fmt.Sprintf(credTimeString, cfg.UsernamePrefix, randString, req.ID[0:4], credTime.Format(defaultPathCredsDynamicTimeFormat))
 
 	// Create the user
 	_, err = b.Conn.PapiCreateUser(username, cfg.HomeDir, cfg.PrimaryGroup, role.AccessZone)
