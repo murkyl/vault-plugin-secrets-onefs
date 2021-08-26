@@ -19,12 +19,12 @@ func RoundTTLToUnit(TTL int, unit int) int {
 	return roundedTTL
 }
 
-// CalcMaxTTL returns the larger TTL of 2 values
+// CalcMaxTTL returns the lower TTL of 2 values
 // There are 2 special values for the TTL. -1 and 0
 // -1 represents an unlimited TTL
 // 0 represents the default of a encompassing TTL or is the equilvalent of -1 when there is no encompassing TTL
 func CalcMaxTTL(roleMaxTTL int, cfgMaxTTL int) int {
-	return GetTTLOfTwoValues(roleMaxTTL, cfgMaxTTL)
+	return GetLowerTTL(roleMaxTTL, cfgMaxTTL)
 }
 
 // CalcTTL returns the calculated TTL from a requested TTL
@@ -35,21 +35,24 @@ func CalcMaxTTL(roleMaxTTL int, cfgMaxTTL int) int {
 func CalcTTL(requestedTTL int, roleTTL int, cfgTTL int, maxTTL int) int {
 	if requestedTTL < 0 {
 		return maxTTL
+	} else if requestedTTL > 0 {
+		return GetLowerTTL(requestedTTL, maxTTL)
 	}
-	max1 := GetTTLOfTwoValues(cfgTTL, maxTTL)
-	max2 := GetTTLOfTwoValues(roleTTL, max1)
- 	if requestedTTL == 0 {
-		return max2
+	// Return the default values as they cascade up
+	if roleTTL != 0 {
+		return GetLowerTTL(roleTTL, maxTTL)
 	}
-	// else if requestedTTL > 0
-	return GetTTLOfTwoValues(max2, requestedTTL)
+	if cfgTTL != 0 {
+		return GetLowerTTL(cfgTTL, maxTTL)
+	}
+	return 0
 }
 
-// GetTTLOfTwoValues returns the larger TTL of 2 values
+// GetLowerTTL returns the larger TTL of 2 values
 // There are 2 special values for the TTL. -1 and 0
 // -1 represents an unlimited TTL
 // 0 represents the default of a encompassing TTL or is the equilvalent of -1 when there is no encompassing TTL
-func GetTTLOfTwoValues(lower int, upper int) int {
+func GetLowerTTL(lower int, upper int) int {
 	switch {
 	case upper <= 0 && lower <= 0:
 		return -1
@@ -63,5 +66,5 @@ func GetTTLOfTwoValues(lower int, upper int) int {
 		}
 		return lower
 	}
-	return -1
+	return 0
 }

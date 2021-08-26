@@ -13,17 +13,24 @@ func TestCalcMaxTTL(t *testing.T) {
 }
 
 func TestCalcTTL(t *testing.T) {
-	//                Req  Role   Cfg   Max Expected
+	//              Req  Role Cfg Max Expected
 	HelperCalcTTL(t, -1, -1, -1, -1, -1)
-	HelperCalcTTL(t, 200, -1, -1, -1, 200)
-	HelperCalcTTL(t, 200, -1, -1, 100, 100)
-	HelperCalcTTL(t, 200, 150, -1, -1, 150)
-	HelperCalcTTL(t, 200, -1, 120, -1, 120)
 	HelperCalcTTL(t, -1, 400, 300, -1, -1)
 	HelperCalcTTL(t, -1, 400, 400, -1, -1)
 	HelperCalcTTL(t, -1, 400, 400, 280, 280)
 	HelperCalcTTL(t, -1, -1, 400, 280, 280)
 	HelperCalcTTL(t, -1, -1, 400, 580, 580)
+	HelperCalcTTL(t, 0, -1, -1, -1, -1)
+	HelperCalcTTL(t, 0, 100, -1, -1, 100)
+	HelperCalcTTL(t, 0, 0, 200, -1, 200)
+	HelperCalcTTL(t, 0, 0, 0, -1, 0)
+	HelperCalcTTL(t, 0, 0, -1, -1, -1)
+	HelperCalcTTL(t, 0, 0, -1, 300, 300)
+	HelperCalcTTL(t, 200, -1, -1, -1, 200)
+	HelperCalcTTL(t, 200, -1, -1, 100, 100)
+	HelperCalcTTL(t, 200, 150, -1, -1, 200)
+	HelperCalcTTL(t, 200, -1, 120, -1, 200)
+	HelperCalcTTL(t, 6000, 0, 300, -1, 6000)
 }
 
 func HelperCalcMaxTTL(t *testing.T, a int, b int, expected int) {
