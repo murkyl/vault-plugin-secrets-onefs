@@ -172,6 +172,8 @@ vault write onefss3/roles/predefined/local_cluster_user ttl=600
 
 Attempts to configure a role where the user does not exist will succeed. However, when a credential is requested an error will be returned.
 
+When using the CLI vault command to create a predefined role with all defaults you must use the -force option or provide some parameter.
+
 ### Retrieve a credential with the default TTL
 ```shell
 vault read onefss3/creds/predefined/someuser@domain.com
