@@ -1,5 +1,5 @@
-# OneFS S3 secrets plugin for Hashicorp Vault
-Manage dynamic access key ID and secret for accessing OneFS S3 buckets.
+# OneFS secrets plugin for Hashicorp Vault
+This plug in will manage S3 dynamic access key ID and secret for accessing OneFS S3 buckets.
 
 ## How it works
 This plugin has 2 modes of operation for generating credentials.
