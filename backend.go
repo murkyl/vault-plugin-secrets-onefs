@@ -1,4 +1,4 @@
-package onefss3
+package vaultonefs
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 const backendHelp = `
-The OneFS S3 secrets plugin for Vault allows dynamic creation and removal of S3 access tokens and secrets.
+The OneFS secrets plugin for Vault allows dynamic creation and removal of S3 access tokens and secrets.
 The plugin supports creation of role based access controls through integration with on cluster configuration.
 `
 const defaultUserRegexp string = "^%s_[^_]+_[^_]+_(?P<TimeStamp>[0-9]{14})$"

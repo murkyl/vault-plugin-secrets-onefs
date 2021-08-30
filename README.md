@@ -66,10 +66,10 @@ No additional cluster configuration is required for this mode.
 
 ## Vault Plugin
 ### Using pre-built releases (recommended)
-Any binary releases available can be found [here](https://github.com/murkyl/vault-plugin-secrets-onefs-s3/releases).
+Any binary releases available can be found [here](https://github.com/murkyl/vault-plugin-secrets-onefs/releases).
 
 ### From source
-Clone the GitHub repository to your local machine and run `make build` from the root of the sources directory. After successful compilation the resulting `vault-plugin-secrets-onefs-s3` binary is located in the `bin/` directory.
+Clone the GitHub repository to your local machine and run `make build` from the root of the sources directory. After successful compilation the resulting `vault-plugin-secrets-onefs` binary is located in the `bin/` directory.
 
 Building from source assumes you have installed the Go development environment.
 
@@ -88,15 +88,15 @@ Plugins also need to be registered with the Vault server [plugin catalog](https:
 
 ```shell
 vault plugin register \
-	-sha256=$(sha256sum /etc/vault.d/vault_plugins/vault-plugin-secrets-onefs-s3 | cut -d " " -f 1) \
-	secret vault-plugin-secrets-onefs-s3
+	-sha256=$(sha256sum /etc/vault.d/vault_plugins/vault-plugin-secrets-onefs | cut -d " " -f 1) \
+	secret vault-plugin-secrets-onefs
 ```
 
 ### Enabling the plugin
 After the plugin is registered you can enable the plugin and have it available on a mount path.
 
 ```shell
-vault secrets enable -path=onefss3 vault-plugin-secrets-onefs-s3
+vault secrets enable -path=onefs vault-plugin-secrets-onefs
 ```
 
 ### Plugin configuration
@@ -104,7 +104,7 @@ To configure the plugin you need to write a set of key/value pairs to the path /
 
 ### Dynamic mode
 ```shell
-vault write onefss3/config/root \
+vault write onefs/config/root \
     user="vault_mgr" \
     password="isasecret" \
     endpoint="https://cluster.com:8080"
@@ -114,7 +114,7 @@ vault write onefss3/config/root \
 
 #### Predefined mode
 ```shell
-vault write onefss3/config/root \
+vault write onefs/config/root \
     user="vault_mgr" \
     password="isasecret" \
     endpoint="https://cluster.com:8080"
@@ -132,24 +132,24 @@ Normal use involves creating roles that associate local groups to the role and t
 This plugin role will associate local groups to the dynamic user and since the bucket ACL has these groups the dynamic user will have access to the bucket. Backup Operators and Guests are used in this example as they are available by default on the cluster.
 
 ```shell
-vault write onefss3/roles/dynamic/Test1 group="Guests" group="Backup Operators" bucket="s3-test" access_zone="System"
+vault write onefs/roles/dynamic/Test1 group="Guests" group="Backup Operators" bucket="s3-test" access_zone="System"
 ```
 
 The access zone is required when defining a role. See the [available options](#path-rolesdynamicrole_name) below for additional customization.
 
 ### Retrieve a credential with the default TTL
 ```shell
-vault read onefss3/creds/dynamic/Test1
+vault read onefs/creds/dynamic/Test1
 ```
 
 ### Retrieve a credential with an unlimited TTL
 ```shell
-vault read onefss3/creds/dynamic/Test1 ttl=-1
+vault read onefs/creds/dynamic/Test1 ttl=-1
 ```
 
 ### Retrieve a credential with a TTL of 180 seconds
 ```shell
-vault read onefss3/creds/dynamic/Test1 ttl=180
+vault read onefs/creds/dynamic/Test1 ttl=180
 ```
 
 ### Credential expiration and cleanup
@@ -166,8 +166,8 @@ Normal use involves creating roles that represent a user's user name. The user n
 A user needs to have a role created for them before they are allowed to retrieve a credential. This role should have a Vault access policy only allowing the specified user to access this particular path. Failure to do so could result in a user prematurely invalidating another user's credentials and also reading another user's credentials.
 
 ```shell
-vault write onefss3/roles/predefined/someuser@domain.com
-vault write onefss3/roles/predefined/local_cluster_user ttl=600
+vault write onefs/roles/predefined/someuser@domain.com
+vault write onefs/roles/predefined/local_cluster_user ttl=600
 ```
 
 Attempts to configure a role where the user does not exist will succeed. However, when a credential is requested an error will be returned.
@@ -176,25 +176,25 @@ When using the CLI vault command to create a predefined role with all defaults y
 
 ### Retrieve a credential with the default TTL
 ```shell
-vault read onefss3/creds/predefined/someuser@domain.com
+vault read onefs/creds/predefined/someuser@domain.com
 ```
 
 ### Retrieve a credential with an unlimited TTL
 ```shell
-vault read onefss3/creds/predefined/local_cluster_user ttl=-1
+vault read onefs/creds/predefined/local_cluster_user ttl=-1
 ```
 
 ### Retrieve a credential with a TTL of 180 seconds
 ```shell
-vault read onefss3/creds/predefined/someuser@domain.com ttl=180
+vault read onefs/creds/predefined/someuser@domain.com ttl=180
 ```
 
 ### Retrieve a credential for a non-existent user
 ```shell
-$ vault read onefss3/creds/predefined/BadUser ttl=6000
-Error reading onefss3/creds/predefined/BadUser: Error making API request.
+$ vault read onefs/creds/predefined/BadUser ttl=6000
+Error reading onefs/creds/predefined/BadUser: Error making API request.
 
-URL: GET http://127.0.0.1:8200/v1/onefss3/creds/predefined/BadUser?ttl=6000
+URL: GET http://127.0.0.1:8200/v1/onefs/creds/predefined/BadUser?ttl=6000
 Code: 500. Errors:
 
 * 1 error occurred:
@@ -219,15 +219,15 @@ The following example creates a HashiCorpy Vault policy and token restricted to 
 
 Contents of policy file /tmp/example_policy_file:
 ```
-path "onefss3/creds/predefined/aduser1@domain.com" {
+path "onefs/creds/predefined/aduser1@domain.com" {
   capabilities = ["read", "list"]
 }
 ```
 
 Configure HashiCorp Vault policy and create new token:
 ```shell
-vault policy write onefss3-predefined-readcred-aduser1 /tmp/example_policy_file
-vault token create -policy=onefss3-predefined-readcred-aduser1
+vault policy write onefs-predefined-readcred-aduser1 /tmp/example_policy_file
+vault token create -policy=onefs-predefined-readcred-aduser1
 ```
 
 ## Plugin options

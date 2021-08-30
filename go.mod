@@ -1,4 +1,4 @@
-module github.com/murkyl/vault-plugin-secrets-onefs-s3
+module github.com/murkyl/vault-plugin-secrets-onefs
 
 go 1.16
 

@@ -1,4 +1,4 @@
-package onefss3
+package vaultonefs
 
 const (
 	// TTLTimeUnit is the default number of seconds a TTL should be a multiple

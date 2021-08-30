@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/sdk/plugin"
-	vault_plugin "github.com/murkyl/vault-plugin-secrets-onefs-s3"
+	vault_plugin "github.com/murkyl/vault-plugin-secrets-onefs"
 	"os"
 )
 

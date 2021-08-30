@@ -1,4 +1,4 @@
-package onefss3
+package vaultonefs
 
 import (
 	"context"

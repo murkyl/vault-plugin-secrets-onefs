@@ -1,7 +1,7 @@
 GOARCH = amd64
 UNAME = $(shell uname -s)
-PLUGIN_NAME = vault-plugin-secrets-onefs-s3
-ACCESS_PATH = onefs-s3
+PLUGIN_NAME = vault-plugin-secrets-onefs
+ACCESS_PATH = onefs
 
 ifndef OS
 	ifeq ($(UNAME), Linux)

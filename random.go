@@ -1,4 +1,4 @@
-package onefss3
+package vaultonefs
 
 // Code modified from https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb
 // Per comment, no license

@@ -1,4 +1,4 @@
-package onefss3
+package vaultonefs
 
 // TODO: Add code to check a bucket and make sure the groups added for a role exist on the bucket ACL list
 
