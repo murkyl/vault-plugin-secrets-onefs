@@ -209,6 +209,25 @@ Code: 500. Errors:
 }
 ```
 
+## Security
+HashiCorp Vault administrators are responsible for plugin security, including creating the Vault policy to ensure only authorized Hashicorp Vault users have access to the onefs  secrets plugin.
+
+The following example creates a HashiCorpy Vault policy and token restricted to generating access_id and secret keys for the predefined OneFS AD user account `aduser1@domain.com`.
+ 
+
+Contents of policy file /tmp/example_policy_file:
+```
+path "onefss3/creds/predefined/aduser1@domain.com" {
+  capabilities = ["read", "list"]
+}
+```
+
+Configure HashiCorp Vault policy and create new token:
+```shell
+vault policy write onefss3-predefined-readcred-aduser1 /tmp/example_policy_file
+vault token create -policy=onefss3-predefined-readcred-aduser1
+```
+
 ## Plugin options
 ### Available paths
     /config/root
