@@ -20,13 +20,13 @@ build:
 	GOOS=$(OS) GOARCH="$(GOARCH)" go build -o bin/${PLUGIN_NAME} cmd/${PLUGIN_NAME}/main.go
 
 start_dev:
-	vault server -dev -dev-root-token-id=root -dev-plugin-dir=./vault/plugins
+	vault server -dev -dev-root-token-id=root -dev-plugin-dir=./bin
 
 enable:
 	vault secrets enable -path=${ACCESS_PATH} ${PLUGIN_NAME}
 
 clean:
-	rm -f ./vault/plugins/${PLUGIN_NAME}
+	rm -f ./bin/${PLUGIN_NAME}
 
 fmt:
 	go fmt $$(go list ./...)
