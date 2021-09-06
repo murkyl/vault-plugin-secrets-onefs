@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	apiPathCredsPredefined                  string = "creds/predefined"
+	apiPathCredsPredefined                  string = "creds/predefined/"
 	defaultPathCredsPredefinedRandomLength  int    = 6
 	defaultPathCredsPredefinedTimeFormat    string = "20060102150405"
 	defaultPathCredsPredefinedExpireSprintf string = "%s_%s_%s_%s"
@@ -20,7 +20,7 @@ const (
 func pathCredsPredefinedBuild(b *backend) []*framework.Path {
 	return []*framework.Path{
 		{
-			Pattern: apiPathCredsPredefined + "/" + framework.GenericNameWithAtRegex(fieldPathCredsPredefinedName),
+			Pattern: apiPathCredsPredefined + framework.GenericNameWithAtRegex(fieldPathCredsPredefinedName),
 			Fields: map[string]*framework.FieldSchema{
 				fieldPathCredsPredefinedName: {
 					Type:        framework.TypeString,

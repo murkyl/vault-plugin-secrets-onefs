@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	apiPathRolesPredefined                  string = "roles/predefined"
+	apiPathRolesPredefined                  string = "roles/predefined/"
 	apiPathRolesPredefinedDefaultAccessZone string = "System"
 	fieldPathRolesPredefinedAccessZone      string = "access_zone"
 	fieldPathRolesPredefinedName            string = "name"
@@ -26,7 +26,7 @@ type s3PredefinedRole struct {
 func pathRolesPredefinedBuild(b *backend) []*framework.Path {
 	return []*framework.Path{
 		{
-			Pattern: apiPathRolesPredefined + "/" + framework.GenericNameWithAtRegex(fieldPathRolesPredefinedName),
+			Pattern: apiPathRolesPredefined + framework.GenericNameWithAtRegex(fieldPathRolesPredefinedName),
 			Fields: map[string]*framework.FieldSchema{
 				fieldPathRolesPredefinedAccessZone: {
 					Type:        framework.TypeString,
@@ -93,7 +93,7 @@ func (b *backend) pathRolesPredefinedWrite(ctx context.Context, req *logical.Req
 	}
 
 	// Format and store data on the backend server
-	entry, err := logical.StorageEntryJSON((apiPathRolesPredefined + "/" + roleName), role)
+	entry, err := logical.StorageEntryJSON((apiPathRolesPredefined + roleName), role)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (b *backend) pathRolesPredefinedDelete(ctx context.Context, req *logical.Re
 	if roleName == "" {
 		return logical.ErrorResponse("Unable to parse role name"), nil
 	}
-	if err := req.Storage.Delete(ctx, apiPathRolesPredefined+"/"+roleName); err != nil {
+	if err := req.Storage.Delete(ctx, apiPathRolesPredefined + roleName); err != nil {
 		return nil, err
 	}
 	return nil, nil
@@ -138,7 +138,7 @@ func (b *backend) pathRolesPredefinedDelete(ctx context.Context, req *logical.Re
 
 // getPredefinedRoleFromStorage retrieves a roles configuration from the API backend server and returns it in a s3PredefinedRole struct
 func getPredefinedRoleFromStorage(ctx context.Context, s logical.Storage, roleName string) (*s3PredefinedRole, error) {
-	data, err := s.Get(ctx, apiPathRolesPredefined+"/"+roleName)
+	data, err := s.Get(ctx, apiPathRolesPredefined + roleName)
 	if err != nil {
 		return nil, err
 	}

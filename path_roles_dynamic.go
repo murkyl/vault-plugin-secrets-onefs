@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	apiPathRolesDynamic                  string = "roles/dynamic"
+	apiPathRolesDynamic                  string = "roles/dynamic/"
 	apiPathRolesDynamicDefaultAccessZone string = "System"
 	fieldPathRolesDynamicAccessZone      string = "access_zone"
 	fieldPathRolesDynamicBucket          string = "bucket"
@@ -33,7 +33,7 @@ type s3Role struct {
 func pathRolesDynamicBuild(b *backend) []*framework.Path {
 	return []*framework.Path{
 		{
-			Pattern: apiPathRolesDynamic + "/" + framework.GenericNameRegex(fieldPathRolesDynamicName),
+			Pattern: apiPathRolesDynamic + framework.GenericNameRegex(fieldPathRolesDynamicName),
 			Fields: map[string]*framework.FieldSchema{
 				fieldPathRolesDynamicAccessZone: {
 					Type:        framework.TypeString,
@@ -126,7 +126,7 @@ func (b *backend) pathRolesDynamicWrite(ctx context.Context, req *logical.Reques
 		return nil, fmt.Errorf("Validation errors for role: %s\n%s", roleName, strings.Join(validationErrors[:], "\n"))
 	}
 	// Format and store data on the backend server
-	entry, err := logical.StorageEntryJSON((apiPathRolesDynamic + "/" + roleName), role)
+	entry, err := logical.StorageEntryJSON((apiPathRolesDynamic + roleName), role)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (b *backend) pathRolesDynamicDelete(ctx context.Context, req *logical.Reque
 	if roleName == "" {
 		return logical.ErrorResponse("Unable to parse role name"), nil
 	}
-	if err := req.Storage.Delete(ctx, apiPathRolesDynamic+"/"+roleName); err != nil {
+	if err := req.Storage.Delete(ctx, apiPathRolesDynamic + roleName); err != nil {
 		return nil, err
 	}
 	return nil, nil
@@ -173,7 +173,7 @@ func (b *backend) pathRolesDynamicDelete(ctx context.Context, req *logical.Reque
 
 // getDynamicRoleFromStorage retrieves a roles configuration from the API backend server and returns it in a s3Role struct
 func getDynamicRoleFromStorage(ctx context.Context, s logical.Storage, roleName string) (*s3Role, error) {
-	data, err := s.Get(ctx, apiPathRolesDynamic+"/"+roleName)
+	data, err := s.Get(ctx, apiPathRolesDynamic + roleName)
 	if err != nil {
 		return nil, err
 	}
