@@ -121,20 +121,20 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 		b.NextCleanup = b.NextCleanup.Add(timeDiff).Add(time.Second * time.Duration(cfg.CleanupPeriod))
 
 		rex := regexp.MustCompile(fmt.Sprintf(defaultUserRegexp, cfg.UsernamePrefix))
-		zones, err := b.Conn.PapiGetAccessZoneList()
+		zones, err := b.getActiveAccessZonesFromRoles(ctx, req, cfg.UsernamePrefix)
 		if err != nil {
-			b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to get access zone list: %s", err))
 			return err
 		}
-		for i := 0; i < len(zones); i++ {
-			users, err := b.Conn.PapiGetUserList(zones[i].Name)
+		// Get a list of all users in the access zone
+		for zoneName := range zones {
+			userList, err := b.Conn.PapiGetUserList(zoneName)
 			if err != nil {
-				b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to get user list for access zone: %s", zones[i].Name))
+				b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to get user list for access zone: %s", zoneName))
 				continue
 			}
-			for j := 0; j < len(users); j++ {
+			for _, user := range userList {
 				// Regex match each user name to determine which users are created by this plugin
-				result := rex.FindAllStringSubmatch(users[j].Name, -1)
+				result := rex.FindAllStringSubmatch(user.Name, -1)
 				if result != nil {
 					// If the user name matches, we need to parse the expiration timestamp from the user name and compare it to the current time
 					expireTime, err := time.ParseInLocation(defaultPathCredsDynamicTimeFormat, result[0][1], time.Local)
@@ -143,9 +143,9 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 					}
 					// If expireTime is earlier than our current time then this user has expired
 					if expireTime.Before(curTime) {
-						_, err := b.Conn.PapiDeleteUser(users[j].Name, zones[i].Name)
+						_, err := b.Conn.PapiDeleteUser(user.Name, zoneName)
 						if err != nil {
-							b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to delete user %s for access zone: %s", users[j].Name, zones[i].Name))
+							b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to delete user %s for access zone: %s", user.Name, zoneName))
 						}
 					}
 				}
@@ -159,4 +159,24 @@ func (b *backend) pluginCleanup(ctx context.Context) {
 	if b.Conn != nil {
 		b.Conn.PapiDisconnect()
 	}
+}
+
+// getActiveAccessZonesFromRoles searches all configured roles and returns a list of access zones that have users
+// configured
+func (b *backend) getActiveAccessZonesFromRoles(ctx context.Context, req *logical.Request, userNamePrefix string) (map[string]bool, error) {
+	configuredRoles, err := req.Storage.List(ctx, apiPathRolesDynamic)
+	if err != nil {
+		return nil, err
+	}
+	// Get all the active Access Zones
+	azones := map[string]bool{}
+	for _, role := range configuredRoles {
+		roleData, err := getDynamicRoleFromStorage(ctx, req.Storage, role)
+		if err != nil || roleData == nil {
+			b.Logger().Error("[getActiveAccessZonesFromRoles] Unable to get role information for role %s: %s", role, err)
+			continue
+		}
+		azones[roleData.AccessZone] = true
+	}
+	return azones, nil
 }
