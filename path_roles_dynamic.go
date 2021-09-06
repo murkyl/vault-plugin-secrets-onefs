@@ -165,7 +165,7 @@ func (b *backend) pathRolesDynamicDelete(ctx context.Context, req *logical.Reque
 	if roleName == "" {
 		return logical.ErrorResponse("Unable to parse role name"), nil
 	}
-	if err := req.Storage.Delete(ctx, apiPathRolesDynamic + roleName); err != nil {
+	if err := req.Storage.Delete(ctx, apiPathRolesDynamic+roleName); err != nil {
 		return nil, err
 	}
 	return nil, nil
@@ -173,7 +173,7 @@ func (b *backend) pathRolesDynamicDelete(ctx context.Context, req *logical.Reque
 
 // getDynamicRoleFromStorage retrieves a roles configuration from the API backend server and returns it in a s3Role struct
 func getDynamicRoleFromStorage(ctx context.Context, s logical.Storage, roleName string) (*s3Role, error) {
-	data, err := s.Get(ctx, apiPathRolesDynamic + roleName)
+	data, err := s.Get(ctx, apiPathRolesDynamic+roleName)
 	if err != nil {
 		return nil, err
 	}

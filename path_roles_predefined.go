@@ -130,7 +130,7 @@ func (b *backend) pathRolesPredefinedDelete(ctx context.Context, req *logical.Re
 	if roleName == "" {
 		return logical.ErrorResponse("Unable to parse role name"), nil
 	}
-	if err := req.Storage.Delete(ctx, apiPathRolesPredefined + roleName); err != nil {
+	if err := req.Storage.Delete(ctx, apiPathRolesPredefined+roleName); err != nil {
 		return nil, err
 	}
 	return nil, nil
@@ -138,7 +138,7 @@ func (b *backend) pathRolesPredefinedDelete(ctx context.Context, req *logical.Re
 
 // getPredefinedRoleFromStorage retrieves a roles configuration from the API backend server and returns it in a s3PredefinedRole struct
 func getPredefinedRoleFromStorage(ctx context.Context, s logical.Storage, roleName string) (*s3PredefinedRole, error) {
-	data, err := s.Get(ctx, apiPathRolesPredefined + roleName)
+	data, err := s.Get(ctx, apiPathRolesPredefined+roleName)
 	if err != nil {
 		return nil, err
 	}

@@ -73,7 +73,7 @@ func (b *backend) pathCredsPredefinedRead(ctx context.Context, req *logical.Requ
 	}
 
 	// Get the S3 access ID and secret key
-	token, err := b.Conn.PapiGetS3Token(roleName, role.AccessZone, 0)
+	token, err := b.Conn.GetS3Token(roleName, role.AccessZone, 0)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get S3 token for user %s: %s", roleName, err)
 	}
@@ -85,7 +85,7 @@ func (b *backend) pathCredsPredefinedRead(ctx context.Context, req *logical.Requ
 	}
 	// To have a token automatically expire, you need to create a second token and set the expiration duration of the previous token
 	if TTLMinutes > 0 {
-		token2, err := b.Conn.PapiGetS3Token(roleName, role.AccessZone, TTLMinutes)
+		token2, err := b.Conn.GetS3Token(roleName, role.AccessZone, TTLMinutes)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to get the second S3 token for user %s: %s", roleName, err)
 		}

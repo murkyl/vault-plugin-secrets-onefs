@@ -91,7 +91,7 @@ func (b *backend) pluginReinit(ctx context.Context, s logical.Storage) error {
 	if b.NextCleanup.Before(time.Now()) {
 		b.NextCleanup = b.NextCleanup.Add(time.Second * time.Duration(cfg.CleanupPeriod))
 	}
-	err = b.Conn.PapiConnect(&papi.OnefsCfg{
+	err = b.Conn.Connect(&papi.OnefsCfg{
 		User:       cfg.User,
 		Password:   cfg.Password,
 		Endpoint:   cfg.Endpoint,
@@ -127,7 +127,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 		}
 		// Get a list of all users in the access zone
 		for zoneName := range zones {
-			userList, err := b.Conn.PapiGetUserList(zoneName)
+			userList, err := b.Conn.GetUserList(zoneName)
 			if err != nil {
 				b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to get user list for access zone: %s", zoneName))
 				continue
@@ -143,7 +143,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 					}
 					// If expireTime is earlier than our current time then this user has expired
 					if expireTime.Before(curTime) {
-						_, err := b.Conn.PapiDeleteUser(user.Name, zoneName)
+						_, err := b.Conn.DeleteUser(user.Name, zoneName)
 						if err != nil {
 							b.Logger().Error(fmt.Sprintf("[pluginPeriod] Unable to delete user %s for access zone: %s", user.Name, zoneName))
 						}
@@ -157,7 +157,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 
 func (b *backend) pluginCleanup(ctx context.Context) {
 	if b.Conn != nil {
-		b.Conn.PapiDisconnect()
+		b.Conn.Disconnect()
 	}
 }
 

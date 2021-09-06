@@ -91,19 +91,19 @@ func (b *backend) pathCredsDynamicRead(ctx context.Context, req *logical.Request
 	username := fmt.Sprintf(credTimeString, cfg.UsernamePrefix, randString, req.ID[0:4], credTime.Format(defaultPathCredsDynamicTimeFormat))
 
 	// Create the user
-	_, err = b.Conn.PapiCreateUser(username, cfg.HomeDir, cfg.PrimaryGroup, role.AccessZone)
+	_, err = b.Conn.CreateUser(username, cfg.HomeDir, cfg.PrimaryGroup, role.AccessZone)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating user: %s", err)
 	}
 
 	// Update user with all the appropriate group memberships from the role
-	err = b.Conn.PapiSetUserSuplementalGroups(username, role.Groups, role.AccessZone)
+	err = b.Conn.SetUserSuplementalGroups(username, role.Groups, role.AccessZone)
 	if err != nil {
 		return nil, fmt.Errorf("Error setting user's supplemental groups: %s", err)
 	}
 
 	// Get the S3 access ID and secret key
-	token, err := b.Conn.PapiGetS3Token(username, role.AccessZone, 0)
+	token, err := b.Conn.GetS3Token(username, role.AccessZone, 0)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get S3 token for user %s: %s", username, err)
 	}
@@ -115,7 +115,7 @@ func (b *backend) pathCredsDynamicRead(ctx context.Context, req *logical.Request
 	}
 	// To have a token automatically expire, you need to create a second token and set the expiration duration of the previous token
 	if TTLMinutes > 0 {
-		token2, err := b.Conn.PapiGetS3Token(username, role.AccessZone, TTLMinutes)
+		token2, err := b.Conn.GetS3Token(username, role.AccessZone, TTLMinutes)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to get the second S3 token for user %s: %s", username, err)
 		}
