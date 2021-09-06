@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
-	papi "github.com/murkyl/go-papi-lite"
 )
 
 const (
@@ -192,14 +191,9 @@ func (b *backend) pathConfigRootWrite(ctx context.Context, req *logical.Request,
 
 	res := &logical.Response{}
 	res.AddWarning("Read access to this endpoint should be controlled via ACLs as it will return sensitive information including credentials")
-	err = b.Conn.PapiConnect(&papi.OnefsCfg{
-		User:       cfg.User,
-		Password:   cfg.Password,
-		Endpoint:   cfg.Endpoint,
-		BypassCert: cfg.BypassCert,
-	})
+	err = b.pluginReinit(ctx, req.Storage)
 	if err != nil {
-		res.AddWarning(fmt.Sprintf("Unable to connect to API endpoint: %s", err))
+		res.AddWarning(fmt.Sprintf("Unable to connect to initialize plugin after config update: %s", err))
 	}
 	return res, nil
 }

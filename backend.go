@@ -20,7 +20,7 @@ const defaultUserRegexp string = "^%s_[^_]+_[^_]+_(?P<TimeStamp>[0-9]{14})$"
 type backend struct {
 	*framework.Backend
 	Conn        *papi.OnefsConn
-	LastCleanup time.Time
+	NextCleanup time.Time
 }
 
 type backendCfg struct {
@@ -41,7 +41,6 @@ var _ logical.Factory = Factory
 // Factory returns a Hashicorp Vault secrets backend object
 func Factory(ctx context.Context, cfg *logical.BackendConfig) (logical.Backend, error) {
 	b := &backend{}
-	b.LastCleanup = time.Now()
 	b.Backend = &framework.Backend{
 		BackendType: logical.TypeLogical,
 		Help:        strings.TrimSpace(backendHelp),
@@ -69,9 +68,28 @@ func (b *backend) pluginInit(ctx context.Context, req *logical.InitializationReq
 		return err
 	}
 	b.Conn = papi.NewPapiConn()
+	if b.Conn == nil {
+		return fmt.Errorf("Failed to create a new PAPI connection")
+	}
 	if cfg == nil {
 		b.Logger().Info("No configuration found. Configure this plugin at the URL <plugin_path>/config/root")
 		return nil
+	}
+	return b.pluginReinit(ctx, req.Storage)
+}
+
+func (b *backend) pluginReinit(ctx context.Context, s logical.Storage) error {
+	cfg, err := getCfgFromStorage(ctx, s)
+	if err != nil {
+		return err
+	}
+	if cfg == nil {
+		b.Logger().Info("No configuration found. Configure this plugin at the URL <plugin_path>/config/root")
+		return nil
+	}
+	b.NextCleanup = time.Now().Round(time.Second * time.Duration(cfg.CleanupPeriod))
+	if b.NextCleanup.Before(time.Now()) {
+		b.NextCleanup = b.NextCleanup.Add(time.Second * time.Duration(cfg.CleanupPeriod))
 	}
 	err = b.Conn.PapiConnect(&papi.OnefsCfg{
 		User:       cfg.User,
@@ -82,7 +100,7 @@ func (b *backend) pluginInit(ctx context.Context, req *logical.InitializationReq
 	if err != nil {
 		b.Logger().Info(fmt.Sprintf("Unable to connect to endpoint during plugin creation: %s", err))
 	}
-	return nil
+	return err
 }
 
 func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error {
@@ -95,9 +113,13 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 		return nil
 	}
 	// Use the stored last cleanup time and only after the configured cleanup time is exceeded do we query all users and perform cleanup
-	cleanupTime := b.LastCleanup.Add(time.Second * time.Duration(cfg.CleanupPeriod))
 	curTime := time.Now()
-	if curTime.After(cleanupTime) {
+	if curTime.After(b.NextCleanup) {
+		// We purposely update the next cleanup time immediately in case a cleanup error occurs. This will prevent
+		// cleanup from running each time pluginPeriod is called
+		timeDiff := time.Now().Sub(b.NextCleanup).Truncate(time.Second * time.Duration(cfg.CleanupPeriod))
+		b.NextCleanup = b.NextCleanup.Add(timeDiff).Add(time.Second * time.Duration(cfg.CleanupPeriod))
+
 		rex := regexp.MustCompile(fmt.Sprintf(defaultUserRegexp, cfg.UsernamePrefix))
 		zones, err := b.Conn.PapiGetAccessZoneList()
 		if err != nil {
@@ -129,8 +151,6 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 				}
 			}
 		}
-		// TODO: We should increment a multiple of LastCleanup. Just using the current time can lead to cleanup time drift.
-		b.LastCleanup = curTime
 	}
 	return nil
 }
