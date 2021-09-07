@@ -71,7 +71,7 @@ Any binary releases available can be found [here](https://github.com/murkyl/vaul
 ### From source
 Clone the GitHub repository to your local machine and run `make build` from the root of the sources directory. After successful compilation the resulting `vault-plugin-secrets-onefs` binary is located in the `bin/` directory.
 
-Building from source assumes you have installed the Go development environment.
+Building from source assumes you have installed the Go development environment. The instructions and Makefile are developed for Linux based systems. Adjust the instructions according to your platform.
 
 ### Registering the plugin
 Before a Vault plugin can be used, it must be copied to the Vault plugins directory and registered. The plugin directory for Vault is located in the Vault configuration file, often located at `/etc/vault.d/vault.hcl`.
@@ -102,7 +102,7 @@ vault secrets enable -path=onefs vault-plugin-secrets-onefs
 ### Plugin configuration
 To configure the plugin you need to write a set of key/value pairs to the path /config/root off of your plugin mount point. These configuration values should be written as key value pairs. Only 3 values are mandatory while the remainder have defaults. See the [available options](#path-configroot) below for additional customization. The configuration below assumes defaults are used.
 
-### Dynamic mode
+#### Dynamic mode
 ```shell
 vault write onefs/config/root \
     user="vault_mgr" \
