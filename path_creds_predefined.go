@@ -9,10 +9,6 @@ import (
 
 const (
 	apiPathCredsPredefined                  string = "creds/predefined/"
-	defaultPathCredsPredefinedRandomLength  int    = 6
-	defaultPathCredsPredefinedTimeFormat    string = "20060102150405"
-	defaultPathCredsPredefinedExpireSprintf string = "%s_%s_%s_%s"
-	defaultPathCredsPredefinedInfSprintf    string = "%s_%s_%s_INF_%s"
 	fieldPathCredsPredefinedName            string = "name"
 	fieldPathCredsPredefinedTTL             string = "ttl"
 )
