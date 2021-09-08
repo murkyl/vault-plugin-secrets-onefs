@@ -63,17 +63,9 @@ func Factory(ctx context.Context, cfg *logical.BackendConfig) (logical.Backend, 
 }
 
 func (b *backend) pluginInit(ctx context.Context, req *logical.InitializationRequest) error {
-	cfg, err := getCfgFromStorage(ctx, req.Storage)
-	if err != nil {
-		return err
-	}
 	b.Conn = papi.NewPapiConn()
 	if b.Conn == nil {
 		return fmt.Errorf("Failed to create a new PAPI connection")
-	}
-	if cfg == nil {
-		b.Logger().Info("No configuration found. Configure this plugin at the URL <plugin_path>/config/root")
-		return nil
 	}
 	return b.pluginReinit(ctx, req.Storage)
 }
@@ -100,7 +92,7 @@ func (b *backend) pluginReinit(ctx context.Context, s logical.Storage) error {
 	if err != nil {
 		b.Logger().Info(fmt.Sprintf("Unable to connect to endpoint during plugin creation: %s", err))
 	}
-	return err
+	return nil
 }
 
 func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error {
@@ -121,7 +113,7 @@ func (b *backend) pluginPeriod(ctx context.Context, req *logical.Request) error 
 		b.NextCleanup = b.NextCleanup.Add(timeDiff).Add(time.Second * time.Duration(cfg.CleanupPeriod))
 
 		rex := regexp.MustCompile(fmt.Sprintf(defaultUserRegexp, cfg.UsernamePrefix))
-		zones, err := b.getActiveAccessZonesFromRoles(ctx, req, cfg.UsernamePrefix)
+		zones, err := b.getActiveAccessZonesFromRoles(ctx, req.Storage, cfg.UsernamePrefix)
 		if err != nil {
 			return err
 		}
@@ -163,7 +155,7 @@ func (b *backend) pluginCleanup(ctx context.Context) {
 
 // getActiveAccessZonesFromRoles searches all configured roles and returns a list of access zones that have users
 // configured
-func (b *backend) getActiveAccessZonesFromRoles(ctx context.Context, req *logical.Request, userNamePrefix string) (map[string]bool, error) {
+func (b *backend) getActiveAccessZonesFromRoles(ctx context.Context, s logical.Storage, userNamePrefix string) (map[string]bool, error) {
 	configuredRoles, err := req.Storage.List(ctx, apiPathRolesDynamic)
 	if err != nil {
 		return nil, err
@@ -171,7 +163,7 @@ func (b *backend) getActiveAccessZonesFromRoles(ctx context.Context, req *logica
 	// Get all the active Access Zones
 	azones := map[string]bool{}
 	for _, role := range configuredRoles {
-		roleData, err := getDynamicRoleFromStorage(ctx, req.Storage, role)
+		roleData, err := getDynamicRoleFromStorage(ctx, s, role)
 		if err != nil || roleData == nil {
 			b.Logger().Error("[getActiveAccessZonesFromRoles] Unable to get role information for role %s: %s", role, err)
 			continue
