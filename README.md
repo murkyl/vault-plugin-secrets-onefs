@@ -88,8 +88,35 @@ Plugins also need to be registered with the Vault server [plugin catalog](https:
 
 ```shell
 vault plugin register \
-	-sha256=$(sha256sum /etc/vault.d/vault_plugins/vault-plugin-secrets-onefs | cut -d " " -f 1) \
-	secret vault-plugin-secrets-onefs
+  -sha256=$(sha256sum /etc/vault.d/vault_plugins/vault-plugin-secrets-onefs_vX.Y.Z | cut -d " " -f 1) \
+  -command vault-plugin-secrets-onefs_vX.Y.Z \
+  secret vault-plugin-secrets-onefs
+```
+
+The -command option can be skipped and the default of the plugin name will be used as the executable. It is easier to always use the -command value to point to a specific version of the plugin executable.
+
+You may see a warning in your Vault logs similar to this:
+```shell
+[WARN]  secrets.vault-plugin-secrets-onefs.vault-plugin-secrets-onefs_f798c167.vault-plugin-secrets-onefs: plugin failed to exit gracefully: metadata=true
+```
+This warning is expected and can be safely ignored.
+
+### Upgrading the plugin
+[Upgrading a plugin](https://www.vaultproject.io/docs/upgrading/plugins) and keeping the existing configuration requires some specific steps. The procedure is similar to registering the plugin for the first time.
+
+1) Ensure the current plugin is already registered, enabled, and mounted to a path
+2) Copy the new binary to the plugin directory
+3) Generate the SHA256 hash of the new binary
+4) Register the new binary with the old plugin name
+5) Ask Vault to reload the plugin
+
+```shell
+vault plugin register \
+  -sha256=$(sha256sum /etc/vault.d/vault_plugins/vault-plugin-secrets-onefs_vX.Y.Z | cut -d " " -f 1) \
+  -command vault-plugin-secrets-onefs_vA.B.C \
+  secret vault-plugin-secrets-onefs
+
+vault plugin reload -plugin vault-plugin-secrets-onefs
 ```
 
 ### Enabling the plugin
