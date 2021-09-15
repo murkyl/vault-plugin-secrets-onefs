@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	apiPathCredsPredefined                  string = "creds/predefined/"
-	fieldPathCredsPredefinedName            string = "name"
-	fieldPathCredsPredefinedTTL             string = "ttl"
+	apiPathCredsPredefined       string = "creds/predefined/"
+	fieldPathCredsPredefinedName string = "name"
+	fieldPathCredsPredefinedTTL  string = "ttl"
 )
 
 func pathCredsPredefinedBuild(b *backend) []*framework.Path {
