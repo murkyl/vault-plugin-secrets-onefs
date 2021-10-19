@@ -156,7 +156,7 @@ func (b *backend) pluginCleanup(ctx context.Context) {
 // getActiveAccessZonesFromRoles searches all configured roles and returns a list of access zones that have users
 // configured
 func (b *backend) getActiveAccessZonesFromRoles(ctx context.Context, s logical.Storage, userNamePrefix string) (map[string]bool, error) {
-	configuredRoles, err := req.Storage.List(ctx, apiPathRolesDynamic)
+	configuredRoles, err := s.List(ctx, apiPathRolesDynamic)
 	if err != nil {
 		return nil, err
 	}
