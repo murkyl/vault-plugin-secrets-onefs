@@ -260,8 +260,11 @@ vault token create -policy=onefs-predefined-readcred-aduser1
 ## Plugin options
 ### Available paths
     /config/root
+    /config/info
+    /roles/dynamic/
     /roles/dynamic/<role_name>
     /creds/dynamic/<role_name>
+    /roles/predefined/
     /roles/predefined/<role_name>
     /creds/predefined/<role_name>
 
