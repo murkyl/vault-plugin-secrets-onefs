@@ -9,6 +9,13 @@ import (
 )
 
 const (
+	pathRolesPredefinedHelpSynopsis    = "List the configured predefined backend roles"
+	pathRolesPredefinedHelpDescription = `
+This endpoint returns a list of all the configured predefined backend roles
+`
+)
+
+const (
 	apiPathRolesPredefined                  string = "roles/predefined/"
 	apiPathRolesPredefinedDefaultAccessZone string = "System"
 	fieldPathRolesPredefinedAccessZone      string = "access_zone"
@@ -53,6 +60,27 @@ func pathRolesPredefinedBuild(b *backend) []*framework.Path {
 			},
 		},
 	}
+}
+
+func pathRolesPredefinedList(b *backend) []*framework.Path {
+	return []*framework.Path{
+		{
+			Pattern: apiPathRolesPredefined + "?$",
+			Operations: map[logical.Operation]framework.OperationHandler{
+				logical.ListOperation: &framework.PathOperation{Callback: b.pathRolesPredefinedList},
+			},
+			HelpSynopsis:    pathRolesPredefinedHelpSynopsis,
+			HelpDescription: pathRolesPredefinedHelpDescription,
+		},
+	}
+}
+
+func (b *backend) pathRolesPredefinedList(ctx context.Context, req *logical.Request, _ *framework.FieldData) (*logical.Response, error) {
+	roleList, err := req.Storage.List(ctx, apiPathRolesPredefined)
+	if err != nil {
+		return nil, err
+	}
+	return logical.ListResponse(roleList), nil
 }
 
 func (b *backend) pathRolesPredefinedWrite(ctx context.Context, req *logical.Request, data *framework.FieldData) (*logical.Response, error) {

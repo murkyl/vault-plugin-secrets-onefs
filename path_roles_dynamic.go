@@ -12,6 +12,13 @@ import (
 )
 
 const (
+	pathRolesDynamicHelpSynopsis    = "List the configured dynamic backend roles"
+	pathRolesDynamicHelpDescription = `
+This endpoint returns a list of all the configured dynamic backend roles
+`
+)
+
+const (
 	apiPathRolesDynamic                  string = "roles/dynamic/"
 	apiPathRolesDynamicDefaultAccessZone string = "System"
 	fieldPathRolesDynamicAccessZone      string = "access_zone"
@@ -68,6 +75,27 @@ func pathRolesDynamicBuild(b *backend) []*framework.Path {
 			},
 		},
 	}
+}
+
+func pathRolesDynamicList(b *backend) []*framework.Path {
+	return []*framework.Path{
+		{
+			Pattern: apiPathRolesDynamic + "?$",
+			Operations: map[logical.Operation]framework.OperationHandler{
+				logical.ListOperation: &framework.PathOperation{Callback: b.pathRolesDynamicList},
+			},
+			HelpSynopsis:    pathRolesDynamicHelpSynopsis,
+			HelpDescription: pathRolesDynamicHelpDescription,
+		},
+	}
+}
+
+func (b *backend) pathRolesDynamicList(ctx context.Context, req *logical.Request, _ *framework.FieldData) (*logical.Response, error) {
+	roleList, err := req.Storage.List(ctx, apiPathRolesDynamic)
+	if err != nil {
+		return nil, err
+	}
+	return logical.ListResponse(roleList), nil
 }
 
 func (b *backend) pathRolesDynamicWrite(ctx context.Context, req *logical.Request, data *framework.FieldData) (*logical.Response, error) {

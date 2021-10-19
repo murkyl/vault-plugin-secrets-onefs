@@ -10,6 +10,7 @@ import (
 
 const (
 	apiPathConfigRoot               string = "config/root"
+	apiPathConfigInfo               string = "config/info"
 	defaultPathConfigCleanupPeriod  int    = 600
 	defaultPathConfigHomeDir        string = "/ifs/home/vault"
 	defaultPathConfigUsernamePrefix string = "vault"
@@ -25,6 +26,7 @@ const (
 	fieldConfigTTLMax               string = "ttl_max"
 	fieldConfigUser                 string = "user"
 	fieldConfigUsernamePrefix       string = "username_prefix"
+	fieldConfigVersion              string = "version"
 )
 
 func pathConfigBuild(b *backend) []*framework.Path {
@@ -80,6 +82,25 @@ func pathConfigBuild(b *backend) []*framework.Path {
 			},
 		},
 	}
+}
+
+func pathConfigInfo(b *backend) []*framework.Path {
+	return []*framework.Path{
+		{
+			Pattern: apiPathConfigInfo,
+			Operations: map[logical.Operation]framework.OperationHandler{
+				logical.ReadOperation: &framework.PathOperation{Callback: b.pathConfigRootInfo},
+			},
+		},
+	}
+}
+
+func (b *backend) pathConfigRootInfo(ctx context.Context, req *logical.Request, _ *framework.FieldData) (*logical.Response, error) {
+	// Fill a key value struct with the stored values
+	kv := map[string]interface{}{
+		fieldConfigVersion:        PluginVersion,
+	}
+	return &logical.Response{Data: kv}, nil
 }
 
 func (b *backend) pathConfigRootRead(ctx context.Context, req *logical.Request, _ *framework.FieldData) (*logical.Response, error) {
