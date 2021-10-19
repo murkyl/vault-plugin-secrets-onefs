@@ -3,7 +3,7 @@ VERSION=$(shell grep PluginVersion version.go | sed -E 's/.*"(.+)"/\1/')
 
 .DEFAULT_GOAL := all
 
-all: fmt build source
+all: fmt build
 
 build: build_linux build_mac build_windows
 
