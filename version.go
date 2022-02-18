@@ -1,3 +1,3 @@
 package vaultonefs
 
-const PluginVersion string = "0.3.1"
+const PluginVersion string = "0.3.2"

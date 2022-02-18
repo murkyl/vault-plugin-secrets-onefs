@@ -98,7 +98,7 @@ func pathConfigInfo(b *backend) []*framework.Path {
 func (b *backend) pathConfigRootInfo(ctx context.Context, req *logical.Request, _ *framework.FieldData) (*logical.Response, error) {
 	// Fill a key value struct with the stored values
 	kv := map[string]interface{}{
-		fieldConfigVersion:        PluginVersion,
+		fieldConfigVersion: PluginVersion,
 	}
 	return &logical.Response{Data: kv}, nil
 }
