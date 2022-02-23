@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
+	"net/url"
 )
 
 const (
@@ -146,7 +147,10 @@ func (b *backend) pathConfigRootWrite(ctx context.Context, req *logical.Request,
 	}
 	endpoint, ok := data.GetOk(fieldConfigEndpoint)
 	if ok {
-		cfg.Endpoint = endpoint.(string)
+		_, err := url.Parse(endpoint)
+		if err == nil {
+			cfg.Endpoint = endpoint.(string)
+		}
 	}
 	homedir, ok := data.GetOk(fieldConfigHomeDir)
 	if ok {
